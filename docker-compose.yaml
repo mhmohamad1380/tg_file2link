@@ -1,0 +1,42 @@
+version: "3.8"
+
+services:
+
+  bot:
+    build:
+      context: .
+      dockerfile: Dockerfile.bot
+    container_name: tg_bot
+    env_file:
+      - .env
+    volumes:
+      - ./files:/app/files
+      - ./db.json:/app/db.json
+    restart: unless-stopped
+
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    container_name: tg_server
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./files:/app/files
+      - ./db.json:/app/db.json
+    restart: unless-stopped
+
+  cleanup:
+    build:
+      context: .
+      dockerfile: Dockerfile.cleanup
+    container_name: tg_cleanup
+    env_file:
+      - .env
+    volumes:
+      - ./files:/app/files
+      - ./db.json:/app/db.json
+    entrypoint: ["sh", "-c", "while true; do python cleanup.py; sleep 3600; done"]
+    restart: unless-stopped
